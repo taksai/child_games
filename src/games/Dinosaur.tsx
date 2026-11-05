@@ -13,12 +13,12 @@ import {
 import { audio } from "../audio";
 import { shuffle, candidateSlots } from "../logic.mjs";
 const slotPositions = [
-  [580, 169],
-  [448, 220],
-  [306, 237],
-  [404, 287],
-  [522, 286],
-  [539, 208],
+  [598, 187],
+  [462, 235],
+  [320, 250],
+  [521, 306],
+  [420, 306],
+  [552, 210],
 ];
 const partNames = [
   "あたま",
@@ -68,6 +68,12 @@ function Bone({ kind }: { kind: number }) {
           fill="none"
           strokeWidth="12"
         />
+      ) : kind === 3 ? (
+        <>
+          <path d="M-5-30V31H24" fill="none" strokeWidth="10" />
+          <circle cx="-5" cy="-30" r="8" />
+          <circle cx="-5" cy="0" r="8" />
+        </>
       ) : (
         <>
           <path d="M-7-31 4 8-9 35 26 35" fill="none" strokeWidth="13" />
@@ -111,6 +117,13 @@ export function DinosaurGame() {
   const { finish } = usePlay();
   const currentPart = s.order[s.spot],
     assemblyPart = s.found[s.attached.length];
+  const positions = slotPositions.map((point, part) =>
+    s.site === 2 && part === 0
+      ? [580, 69]
+      : s.site === 2 && part === 5
+        ? [555, 153]
+        : point,
+  );
   const hint =
     s.phase === "select"
       ? "どこを ほってみよう？"
@@ -337,13 +350,13 @@ export function DinosaurGame() {
             </>
           ) : s.phase === "assemble" ? (
             <>
-              <g transform="translate(135 40) scale(2.1)" opacity=".16">
+              <g transform="translate(240 0) scale(1.6)" opacity=".16">
                 <DinosaurDrawing kind={s.site} bones />
               </g>
               {s.attached.map((p) => (
                 <g
                   key={p}
-                  transform={`translate(${slotPositions[p][0]} ${slotPositions[p][1]})`}
+                  transform={`translate(${positions[p][0]} ${positions[p][1]})`}
                 >
                   <Bone kind={p} />
                 </g>
@@ -351,7 +364,7 @@ export function DinosaurGame() {
               {s.choices.map((p, i) => (
                 <g
                   key={p}
-                  transform={`translate(${slotPositions[p][0]} ${slotPositions[p][1]})`}
+                  transform={`translate(${positions[p][0]} ${positions[p][1]})`}
                 >
                   <ellipse
                     rx="65"
@@ -374,12 +387,12 @@ export function DinosaurGame() {
                 <Bone kind={assemblyPart} />
               </g>
               <text x="110" y="369" fontSize="14" textAnchor="middle">
-                この ほねは？
+                {partNames[assemblyPart]}の ほね
               </text>
             </>
           ) : (
             <>
-              <g transform="translate(120 5) scale(2.2)">
+              <g transform="translate(210 0) scale(1.6)">
                 <DinosaurDrawing kind={s.site} />
               </g>
               <g transform="translate(735 89)">

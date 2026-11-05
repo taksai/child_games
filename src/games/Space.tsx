@@ -47,9 +47,11 @@ export function SpaceGame() {
           "くもから ふわふわの なかま！",
           "おとで おへんじしてくれたよ！",
         ][encounter]
-      : nearby >= 0
-        ? "ちかくに だれかいる！ スペースで ごあいさつ。"
-        : "やじるしで おさんぽ。ほしの えでも とんでいけるよ！";
+      : auto !== null
+        ? `${planets[auto].name}へ とんでいるよ！`
+        : nearby >= 0
+          ? "ちかくに だれかいる！ スペースで ごあいさつ。"
+          : "やじるしで おさんぽ。ほしの えでも とんでいけるよ！";
   useAnnounce(hint);
   const fly = (i: number) => {
     if (journal || encounter !== null) return;

@@ -221,12 +221,20 @@ try {
     "Band: add/remove members and complete the parade",
     async () => {
       await open("animal-band");
+      assert(button("パレード！").disabled, "Choose a member before a parade");
+      await tap("Enter");
+      assert(!text().includes("パレードちゅう"));
       for (const n of [1, 3, 5, 3]) await tap("Digit" + n);
       assert.equal(
         document.querySelectorAll('.control[aria-pressed="true"]').length,
         2,
       );
       await tap("Space");
+      const performers = () => [...document.querySelectorAll(".stage-svg > g")]
+        .filter((g) => g.querySelector(".animal"));
+      assert(performers()[0].getAttribute("transform").includes(" 53)"));
+      await advance(0.8);
+      assert(performers()[0].getAttribute("transform").includes(" 65)"), "Jump lands without another input");
       await tap("Enter");
       await advance(12.3);
       done();
@@ -240,7 +248,6 @@ try {
       await tap("Digit1");
       for (let stage = 0; stage < 4; stage++) {
         for (let zone = 0; zone < 3; zone++) {
-          if (zone) await tap("ArrowRight");
           await key("Space");
           await advance(1.7);
           await key("Space", false);
@@ -281,6 +288,8 @@ try {
         const options = [
           ...document.querySelectorAll(".control-deck .control"),
         ];
+        const shapes = options.map((b) => b.querySelector("svg").innerHTML);
+        assert.equal(new Set(shapes).size, shapes.length, "Bone choices must be visually distinct");
         await click(options[attempt % options.length]);
       }
       await advance(4.3);
@@ -494,6 +503,11 @@ try {
       await advance(2.7);
       await click("みどり");
       await click("シールを はる");
+      assert.equal(
+        document.querySelector('.stage-svg g[transform="translate(66 139) scale(.43)"]').innerHTML,
+        document.querySelector('button[aria-label="シールを かえる"] svg > g').innerHTML,
+        "Sticker preview must match the applied sticker",
+      );
       await click("シールを かえる");
       await click("シールを はる");
       await click("しゅっぱつ！");
