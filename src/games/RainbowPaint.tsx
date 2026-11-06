@@ -55,8 +55,9 @@ function stamp(
 }
 export function RainbowPaintGame() {
   const canvas = useRef<HTMLCanvasElement>(null),
-    previous = useRef<HTMLCanvasElement | null>(null),
+    previous = useRef<{ image: HTMLCanvasElement; marks: number } | null>(null),
     sound = useRef(new MashAudio());
+  const paperMarks = useRef(0);
   const count = useRef(0),
     clock = useRef(0),
     nextHold = useRef(0),
@@ -123,7 +124,8 @@ export function RainbowPaintGame() {
     strokes.current.set(e.code, { x, y, angle: n * 0.7 });
     if (strokes.current.size > 3)
       strokes.current.delete(strokes.current.keys().next().value!);
-    setMarks(count.current);
+    paperMarks.current++;
+    setMarks(paperMarks.current);
     sound.current.play(0, e.index, 0.1);
     lastInput.current = clock.current;
   };
@@ -161,12 +163,14 @@ export function RainbowPaintGame() {
         s.x = x;
         s.y = y;
         count.current++;
+        paperMarks.current++;
       });
-      setMarks(count.current);
+      setMarks(paperMarks.current);
       sound.current.play(2, held.length, 0.08);
       lastInput.current = clock.current;
     },
     () => {
+      nextHold.current = 0;
       strokes.current.clear();
       sound.current.stop();
     },
@@ -175,6 +179,7 @@ export function RainbowPaintGame() {
     clock.current += dt;
     if (guest && clock.current > guest.end) setGuest(null);
     if (
+      marks > 0 &&
       count.current >= 12 &&
       clock.current >= 8 &&
       clock.current - lastGuest.current >= 20 &&
@@ -199,18 +204,27 @@ export function RainbowPaintGame() {
   const changePaper = (restore = false) => {
     const c = ctx();
     if (!c || !canvas.current) return;
+    if (!restore && paperMarks.current === 0) {
+      input.stage.current?.focus({ preventScroll: true });
+      return;
+    }
     input.reset();
+    const oldMarks = paperMarks.current;
     const copy = document.createElement("canvas");
     copy.width = W;
     copy.height = H;
     copy.getContext("2d")?.drawImage(canvas.current, 0, 0);
     c.fillStyle = "#fffdf7";
     c.fillRect(0, 0, W, H);
-    if (restore && previous.current) c.drawImage(previous.current, 0, 0);
-    previous.current = copy;
+    if (restore && previous.current) c.drawImage(previous.current.image, 0, 0);
+    paperMarks.current = restore ? (previous.current?.marks ?? 0) : 0;
+    previous.current = { image: copy, marks: oldMarks };
+    setMarks(paperMarks.current);
+    setGuest(null);
+    lastInput.current = -10;
     setHasPrevious(true);
     setPaper((p) => p + 1);
-    input.stage.current?.focus();
+    input.stage.current?.focus({ preventScroll: true });
   };
   return (
     <div className="mash-game paint-game">
@@ -240,7 +254,7 @@ export function RainbowPaintGame() {
           onPointerDown={(e) => {
             if (e.button !== 0) return;
             e.preventDefault();
-            input.stage.current?.focus();
+            input.stage.current?.focus({ preventScroll: true });
             e.currentTarget.setPointerCapture?.(e.pointerId);
             const r = e.currentTarget.getBoundingClientRect();
             const info = input.input.current.press(
@@ -294,8 +308,16 @@ export function RainbowPaintGame() {
         {["まる", "ほし", "しぶき", "うずまき"].map((n, i) => (
           <button
             key={n}
+            aria-label={n}
             {...input.pad(["KeyA", "KeyS", "KeyD", "KeyF"][i])}
-            style={{ "--pad": paintColors[i] } as React.CSSProperties}
+            style={
+              {
+                "--pad":
+                  paintColors[
+                    keyInfo(["KeyA", "KeyS", "KeyD", "KeyF"][i])!.color
+                  ],
+              } as React.CSSProperties
+            }
           >
             <span aria-hidden="true">{["●", "★", "✺", "◎"][i]}</span>
             {n}

@@ -3,8 +3,12 @@ import { useMashInput, MashGuide } from "../mash";
 import { useAnnounce, useTick } from "../play";
 import { MashAudio } from "../mashAudio";
 import { audio } from "../audio";
-import { keyInfo } from "../mashLogic.mjs";
-import { makeTower, stepBlocks, hitBlocks } from "../blockSmashPhysics.mjs";
+import {
+  makeTower,
+  stepBlocks,
+  hitBlocks,
+  windForKeys,
+} from "../blockSmashPhysics.mjs";
 const layouts = ["つみきタワー", "ながい はし", "おもちゃの おしろ"];
 export function BlockSmashGame() {
   const canvas = useRef<HTMLCanvasElement>(null),
@@ -51,11 +55,7 @@ export function BlockSmashGame() {
   const input = useMashInput(
     (e) => strike(e.group, e.index, e.burst),
     (held) => {
-      wind.current = held.reduce(
-        (n, c) => n + (keyInfo(c)!.index % 2 ? 190 : -190),
-        0,
-      );
-      wind.current = Math.max(-300, Math.min(300, wind.current));
+      wind.current = windForKeys(held);
       setGust(held.length > 0);
     },
     () => {
@@ -215,6 +215,7 @@ export function BlockSmashGame() {
         className="mash-stage smash-stage"
         aria-label="つみきタワー。好きなキーでくずす"
         data-cycle={status.round}
+        data-wind={wind.current}
         data-hits={status.hits}
         data-blocks={status.blocks}
       >

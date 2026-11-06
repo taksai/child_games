@@ -1,4 +1,4 @@
-import { paintColors } from "./mashLogic.mjs";
+import { paintColors, keyInfo } from "./mashLogic.mjs";
 export function makeTower(layout = 0) {
   const blocks = [];
   const put = (x, y, w = 62, h = 40) =>
@@ -103,4 +103,14 @@ export function hitBlocks(blocks, side = 1, strong = false) {
     b.x += side * 18;
   }
   return { x: target.x, y: target.y };
+}
+
+// Random simultaneous keys should strengthen a gust, never cancel it out.
+export function windForKeys(codes) {
+  if (!codes.length) return 0;
+  const last = keyInfo(codes[codes.length - 1]);
+  if (!last) return 0;
+  return (
+    (last.index % 2 ? 1 : -1) * Math.min(300, 190 + (codes.length - 1) * 55)
+  );
 }

@@ -91,15 +91,37 @@ globalThis.AudioContext = class {
   }
 };
 // Canvas is mocked only for control/lifecycle tests; rendering is checked in a real browser.
-dom.window.HTMLCanvasElement.prototype.getContext = () =>
-  new Proxy(
-    {},
-    {
-      get: (_target, key) =>
-        key === "measureText" ? () => ({ width: 20 }) : () => {},
-      set: () => true,
-    },
-  );
+const canvasContexts = new WeakMap();
+dom.window.HTMLCanvasElement.prototype.getContext = function () {
+  if (!canvasContexts.has(this)) {
+    const values = {};
+    canvasContexts.set(
+      this,
+      new Proxy(values, {
+        get: (target, key) =>
+          key in target
+            ? target[key]
+            : key === "fill"
+              ? () => {
+                  target.lastInk = target.fillStyle;
+                }
+              : key === "stroke"
+                ? () => {
+                    if (target.strokeStyle !== "#fff9eb")
+                      target.lastInk = target.strokeStyle;
+                  }
+                : key === "measureText"
+                  ? () => ({ width: 20 })
+                  : () => {},
+        set: (target, key, value) => {
+          target[key] = value;
+          return true;
+        },
+      }),
+    );
+  }
+  return canvasContexts.get(this);
+};
 dom.window.HTMLCanvasElement.prototype.toDataURL = () =>
   "data:image/png;base64,";
 const React = await import("react");
@@ -671,6 +693,71 @@ try {
       await advance(9.3);
       await click("こうじょう できた！");
       done();
+      await home();
+    },
+  );
+  await scenario(
+    "Drum: all five animal pictures respond exactly once",
+    async () => {
+      await open("toy-drum");
+      const stage = document.querySelector(".mash-stage");
+      for (const [i, name] of [
+        "たいこ",
+        "ベル",
+        "もっきん",
+        "ラッパ",
+        "シンバル",
+      ].entries()) {
+        await click(`${name}のどうぶつをならす`);
+        assert.equal(Number(stage.dataset.hits), i + 1);
+      }
+      await home();
+    },
+  );
+  await scenario(
+    "Paint: pad colors match ink and repeated clearing preserves the previous picture",
+    async () => {
+      await open("rainbow-paint");
+      const stage = document.querySelector(".mash-stage");
+      const clear = button("＋ まっさら");
+      assert.equal(stage.dataset.marks, "0");
+      for (const name of ["まる", "ほし", "しぶき", "うずまき"]) {
+        const pad = button(name);
+        await advance(0.2);
+        await click(pad);
+        assert.equal(
+          document.querySelector("canvas").getContext("2d").lastInk ?? "",
+          pad.style.getPropertyValue("--pad"),
+        );
+      }
+      const marks = stage.dataset.marks;
+      await click(clear);
+      assert.equal(stage.dataset.marks, "0");
+      assert(document.querySelector(".paint-invitation"));
+      assert.equal(stage.dataset.marks, "0");
+      await act(async () => {
+        clear.click();
+        clear.click();
+      });
+      await click("▧ まえの かみ");
+      assert.equal(stage.dataset.marks, marks);
+      assert(!document.querySelector(".paint-invitation"));
+      assert.equal(document.activeElement, stage);
+      await home();
+    },
+  );
+  await scenario(
+    "Tower: opposing held keys produce a gust and release stops it",
+    async () => {
+      await open("block-smash");
+      await key("KeyA");
+      await key("KeyS");
+      await advance(0.5);
+      assert(Number(document.querySelector(".mash-stage").dataset.wind) > 0);
+      await key("KeyA", false);
+      await key("KeyS", false);
+      await advance(0.1);
+      assert.equal(document.querySelector(".mash-stage").dataset.wind, "0");
       await home();
     },
   );

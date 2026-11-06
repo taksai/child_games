@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { MashInput, keyInfo, mashCodes } from "../src/mashLogic.mjs";
-import { makeTower, stepBlocks, hitBlocks } from "../src/blockSmashPhysics.mjs";
+import {
+  makeTower,
+  stepBlocks,
+  hitBlocks,
+  windForKeys,
+} from "../src/blockSmashPhysics.mjs";
 
 test("Mash keys include typing keys without swallowing navigation or modifiers", () => {
   for (const code of [
@@ -75,4 +80,15 @@ test("Five minutes of wind and impacts keep physics finite and block count bound
   }
   assert.equal(b.length, 23);
   for (const x of b) assert(Number.isFinite(x.x + x.y + x.vx + x.vy));
+});
+
+test("Opposite held keys strengthen wind in the most recent direction instead of cancelling", () => {
+  assert.equal(windForKeys([]), 0);
+  assert(windForKeys(["KeyA"]) < 0);
+  assert(windForKeys(["KeyA", "KeyS"]) > 0);
+  assert(windForKeys(["KeyS", "KeyA"]) < 0);
+  assert(
+    Math.abs(windForKeys(["KeyA", "KeyS"])) > Math.abs(windForKeys(["KeyA"])),
+  );
+  assert.equal(Math.abs(windForKeys(["KeyA", "KeyS", "KeyD", "KeyF"])), 300);
 });

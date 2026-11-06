@@ -219,6 +219,15 @@ export function ToyDrumGame() {
             </text>
           )}
         </svg>
+        <div className="drum-performers">
+          {names.map((name, i) => (
+            <button
+              key={name}
+              {...input.pad(codes[i])}
+              aria-label={`${name}のどうぶつをならす`}
+            />
+          ))}
+        </div>
       </div>
       <MashGuide>ポン！ チリン！ ガシャガシャ！</MashGuide>
       <div className="mash-pads">
