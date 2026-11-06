@@ -29,6 +29,7 @@ export function BandGame() {
     };
   }, [members, started, paused]);
   useTick((dt) => {
+    if (jump > 0) setJump((remaining) => Math.max(0, remaining - dt));
     if (parade) {
       setElapsed((t) => t + dt);
       if (elapsed >= 12) finish();
@@ -40,12 +41,12 @@ export function BandGame() {
     setMembers((m) => (m.includes(i) ? m.filter((x) => x !== i) : [...m, i]));
   };
   const accent = () => {
-    if (jump > Date.now() - 650) return;
-    setJump(Date.now());
+    if (jump > 0) return;
+    setJump(0.65);
     audio.sound("jump");
   };
   const go = () => {
-    if (!parade) {
+    if (!parade && members.length > 0) {
       setParade(true);
       setElapsed(0);
       audio.sound("success");
@@ -79,27 +80,26 @@ export function BandGame() {
           {names.map((_, i) => (
             <g
               key={i}
-              transform={`translate(${5 + i * 176 + (parade ? Math.sin(elapsed * 0.8) * 12 : 0)} ${65 + (jump > Date.now() - 450 ? -12 : 0)}) scale(.6)`}
+              transform={`translate(${5 + i * 176 + (parade ? Math.sin(elapsed * 0.8) * 12 : 0)} ${65 + (jump > 0.2 ? -12 : 0)}) scale(.6)`}
               opacity={members.includes(i) ? 1 : 0.45}
             >
               <AnimalDrawing kind={i} playing={members.includes(i)} />
-              <g
-                transform="translate(95 129) scale(.42)"
-                className={members.includes(i) ? "playing-instrument" : ""}
-              >
-                <ObjectDrawing
-                  kind={
-                    i === 0
-                      ? "drum"
-                      : i === 3
-                        ? "trumpet"
-                        : i === 4
-                          ? "bell"
-                          : i === 1
-                            ? "bass"
-                            : "guitar"
-                  }
-                />
+              <g transform="translate(95 129) scale(.42)">
+                <g className={members.includes(i) ? "playing-instrument" : ""}>
+                  <ObjectDrawing
+                    kind={
+                      i === 0
+                        ? "drum"
+                        : i === 3
+                          ? "trumpet"
+                          : i === 4
+                            ? "bell"
+                            : i === 1
+                              ? "bass"
+                              : "guitar"
+                    }
+                  />
+                </g>
               </g>
               <text x="150" y="277" textAnchor="middle" fontSize="19">
                 {members.includes(i) ? "えんそうちゅう" : "おやすみ"}
@@ -153,7 +153,11 @@ export function BandGame() {
           </Control>
         ))}
         <Control label="ジャンプ！" keyName="Space" onClick={accent} />
-        <Primary keyName="Enter" onClick={go} disabled={parade}>
+        <Primary
+          keyName="Enter"
+          onClick={go}
+          disabled={parade || members.length === 0}
+        >
           {parade ? "パレードちゅう" : "パレード！"}
         </Primary>
       </div>

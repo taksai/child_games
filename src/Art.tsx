@@ -1495,6 +1495,65 @@ export function Illustration({
 }) {
   let drawing: React.ReactNode;
   switch (kind) {
+    case "rainbow-paint":
+      drawing = (
+        <>
+          <rect
+            x="35"
+            y="30"
+            width="230"
+            height="175"
+            rx="20"
+            fill="#fffdf7"
+            stroke="#e4d7c9"
+            strokeWidth="4"
+          />
+          {["#ef82a5", "#ffd05a", "#79ccbc", "#ae91df"].map((c, i) => (
+            <g
+              key={c}
+              transform={`translate(${65 + i * 44} ${55 + (i % 2) * 55}) scale(.45)`}
+            >
+              <Star fill={c} />
+            </g>
+          ))}
+          <path
+            d="M65 165Q110 125 150 170T240 135"
+            fill="none"
+            stroke="#79bce8"
+            strokeWidth="17"
+            strokeLinecap="round"
+          />
+        </>
+      );
+      break;
+    case "block-smash":
+      drawing = (
+        <>
+          {Array.from({ length: 9 }, (_, i) => (
+            <g
+              key={i}
+              transform={`translate(${55 + (i % 3) * 65} ${170 - Math.floor(i / 3) * 48}) rotate(${i === 8 ? 15 : 0})`}
+            >
+              <rect
+                width="59"
+                height="43"
+                rx="8"
+                fill={["#ef9b9e", "#ffd05a", "#79ccbc"][i % 3]}
+                stroke="#fff7ed"
+                strokeWidth="3"
+              />
+            </g>
+          ))}
+          <circle cx="245" cy="70" r="25" fill="#b099dd" />
+          <path
+            d="M266 37l12-15m-2 38 18-4"
+            stroke="#b099dd"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+        </>
+      );
+      break;
     case "pancake":
       drawing = (
         <>
@@ -1516,6 +1575,7 @@ export function Illustration({
         </>
       );
       break;
+    case "toy-drum":
     case "animal-band":
       drawing = (
         <>

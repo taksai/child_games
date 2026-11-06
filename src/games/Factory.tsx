@@ -83,7 +83,9 @@ export function FactoryGame() {
       ? "ここを かえたら、どうなる？ えらんで ころがそう！"
       : phase === "running"
         ? "ころころ… どんな えが できるかな？"
-        : "まえの えと くらべてみよう！";
+        : previous
+          ? "まえの えと くらべてみよう！"
+          : "えが できた！ しかけを かえると、どうなるかな？";
   useAnnounce(hint);
   const change = (kind: number) => {
     if (phase !== "building" || config.modules[selected] === kind) return;

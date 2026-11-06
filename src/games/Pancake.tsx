@@ -28,10 +28,10 @@ export function PancakeGame() {
   const [s, setS] = useState(initial);
   const { finish } = usePlay();
   const hints: Record<string, string> = {
-    pour: "スペースで きじを ながそう！",
+    pour: "ボタンか スペースで きじを ながそう！",
     pouring: "とろ〜り、まあるく なあれ。",
     cookFront: "ぷくぷく あわが でてきたよ。",
-    flipReady: "いい いろ！ スペースで ひっくりかえそう！",
+    flipReady: "いい いろ！ ボタンか スペースで ひっくりかえそう！",
     flipping: "くるんっ！",
     cookBack: "うらも じっくり やこう。",
     plateReady: "やけたよ！ おさらに のせよう。",
@@ -278,7 +278,7 @@ export function PancakeGame() {
         {cooking && (
           <div className="stage-callout">
             {s.elapsed < 3 ? "じゅわ〜…" : "ぷくぷく… もうすこし！"}{" "}
-            <span aria-hidden="true">● ● ●</span>
+            <progress aria-label="やけるまで" max={8} value={s.elapsed} />
           </div>
         )}
       </Stage>

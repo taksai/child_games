@@ -38,11 +38,35 @@ const initial: State = {
   drying: false,
 };
 const phases = ["みず", "あわ", "ブラシ", "すすぎ", "かぜ", "かざり"];
+function Sticker({ value: v }: { value: number }) {
+  return (
+    <>
+      {v % 3 === 0 ? (
+        <circle
+          r="21"
+          fill={colors[v % 5]}
+          stroke="#fff7df"
+          strokeWidth="4"
+        />
+      ) : v % 3 === 1 ? (
+        <Star fill={colors[v % 5]} />
+      ) : (
+        <path
+          d="M0 19S-32 1-19-14Q-7-27 0-10Q11-28 23-12Q32 4 0 19Z"
+          fill={colors[v % 5]}
+          stroke="#fff7df"
+          strokeWidth="3"
+        />
+      )}
+    </>
+  );
+}
 export function CarWashGame() {
   const [s, setS] = useState(initial),
     [sticker, setSticker] = useState(0);
   const { finish } = usePlay();
   const pointerPhase = useRef(-99);
+  const pointerZone = useRef(0);
   const hint =
     s.phase === -1
       ? "どの くるまを ぴかぴかにする？"
@@ -50,7 +74,9 @@ export function CarWashGame() {
         ? "すきな いろと シールで おめかししよう！"
         : s.phase === 6
           ? "ありがとう！ また くるね！"
-          : `${phases[s.phase]}で ぴかぴか！ ばしょも えらべるよ。`;
+          : s.phase === 4
+            ? "かぜで かわかそう！"
+            : `${phases[s.phase]}で ぴかぴか！ おしたままでも あそべるよ。`;
   useAnnounce(hint);
   const select = (vehicle: number) => {
     audio.sound("pop");
@@ -73,6 +99,10 @@ export function CarWashGame() {
           hold: false,
           elapsed: 0,
         };
+      }
+      if (p[a.zone] >= 1) {
+        audio.sound("pop");
+        return { ...a, progress: p, zone: p.findIndex((v) => v < 1) };
       }
       return { ...a, progress: p };
     });
@@ -182,23 +212,7 @@ export function CarWashGame() {
                   key={i}
                   transform={`translate(${66 + i * 53} 139) scale(.43)`}
                 >
-                  {v % 3 === 0 ? (
-                    <circle
-                      r="21"
-                      fill={colors[v % 5]}
-                      stroke="#fff7df"
-                      strokeWidth="4"
-                    />
-                  ) : v % 3 === 1 ? (
-                    <Star fill={colors[v % 5]} />
-                  ) : (
-                    <path
-                      d="M0 19S-32 1-19-14Q-7-27 0-10Q11-28 23-12Q32 4 0 19Z"
-                      fill={colors[v % 5]}
-                      stroke="#fff7df"
-                      strokeWidth="3"
-                    />
-                  )}
+                  <Sticker value={v} />
                 </g>
               ))}
               {s.phase < 4 &&
@@ -299,10 +313,14 @@ export function CarWashGame() {
               <button
                 key={n}
                 className={s.zone === i ? "selected" : ""}
+                aria-pressed={s.zone === i}
                 onClick={() => zone(i)}
               >
                 {s.progress[i] >= 1 ? "✓ " : ""}
                 {n}
+                <span className="wash-meter" aria-hidden="true">
+                  <span style={{ width: `${s.progress[i] * 100}%` }} />
+                </span>
               </button>
             ))}
           </div>
@@ -348,7 +366,7 @@ export function CarWashGame() {
             >
               <SvgPicture>
                 <g transform="translate(150 125) scale(3)">
-                  <Star fill={colors[sticker % 5]} />
+                  <Sticker value={sticker + 1} />
                 </g>
               </SvgPicture>
             </Control>
@@ -380,6 +398,7 @@ export function CarWashGame() {
               disabled={s.drying}
               onPointerDown={(e) => {
                 pointerPhase.current = s.phase;
+                pointerZone.current = s.zone;
                 e.currentTarget.setPointerCapture(e.pointerId);
                 hold(true);
               }}
@@ -387,7 +406,8 @@ export function CarWashGame() {
               onPointerCancel={() => hold(false)}
               onClick={() => {
                 if (
-                  pointerPhase.current === s.phase ||
+                  (pointerPhase.current === s.phase &&
+                    pointerZone.current === s.zone) ||
                   pointerPhase.current === -99
                 )
                   tool(0.35);

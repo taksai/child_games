@@ -1,5 +1,32 @@
 export const games = [
   {
+    id: "toy-drum",
+    title: "ガシャガシャ！おもちゃドラム",
+    tag: "どこを おしても、おんがく！",
+    category: "ガシャガシャ",
+    color: "#bea3ed",
+    soft: "#f1eafb",
+    time: "すきなだけ",
+  },
+  {
+    id: "rainbow-paint",
+    title: "どばどば！にじいろペンキ",
+    tag: "おすたび、きみの いろになる",
+    category: "ガシャガシャ",
+    color: "#f5a2bb",
+    soft: "#fff0f3",
+    time: "すきなだけ",
+  },
+  {
+    id: "block-smash",
+    title: "どっかーん！つみきタワー",
+    tag: "なんどでも、くずしていいよ！",
+    category: "ガシャガシャ",
+    color: "#9acdb4",
+    soft: "#eaf5ee",
+    time: "すきなだけ",
+  },
+  {
     id: "pancake",
     title: "パンケーキやさん",
     tag: "やいて、かざって、いただきます！",
