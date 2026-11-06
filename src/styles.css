@@ -1704,3 +1704,296 @@ kbd {
     display: none;
   }
 }
+
+/* Free play: the play surface owns mash keys; ordinary UI keeps native focus. */
+.mash-game {
+  padding: 14px;
+  background: #fffcf7;
+  border-radius: 26px;
+}
+.mash-stage {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  width: 100%;
+  outline: 3px solid transparent;
+  outline-offset: 3px;
+  background: #f3edfb;
+}
+.mash-stage:focus-visible {
+  outline-color: #af92ce;
+}
+.mash-stage svg,
+.mash-stage canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 900 / 420;
+  max-height: min(48vh, 440px);
+  object-fit: contain;
+  touch-action: none;
+}
+.mash-stage-label {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  z-index: 1;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #6a5573;
+}
+.mash-stage-label span {
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+.mash-stage-label strong {
+  font-size: 19px;
+}
+.mash-guide {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px;
+  color: #6b5b64;
+}
+.mash-guide strong,
+.mash-guide div > span {
+  display: block;
+}
+.mash-guide strong {
+  font-size: 15px;
+}
+.mash-guide div > span {
+  font-size: 12px;
+  margin-top: 4px;
+}
+.mash-keyboard {
+  font-size: 40px;
+  color: #aa8cbd;
+}
+.mash-small {
+  font-size: 11px;
+  margin-left: auto;
+}
+.mash-pads {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.mash-pads button {
+  flex: 1;
+  max-width: 170px;
+  min-height: 78px;
+  border: 2px solid #ffffff;
+  border-radius: 18px;
+  background: var(--pad);
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--pad), #76644e 18%);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #574a56;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+.mash-pads button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #b0a090;
+}
+.mash-pads button > span {
+  display: block;
+  font-size: 27px;
+  line-height: 32px;
+}
+.mash-pads small {
+  font-size: 9px;
+  display: block;
+}
+.paint-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #947477;
+  font-size: 12px;
+}
+.paint-toolbar button {
+  min-height: 42px;
+  border: 1px solid #e6d3ce;
+  border-radius: 12px;
+  background: white;
+  color: #7b6269;
+  font: inherit;
+  padding: 8px 14px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+.paint-toolbar button:disabled {
+  opacity: 0.4;
+}
+.paint-stage {
+  background: #fffdf7;
+  box-shadow: inset 0 0 0 2px #eee2d4;
+  border: 2px solid #eee2d4;
+}
+.mash-stage:has(canvas) {
+  max-width: min(100%, calc(48vh * 900 / 420), 943px);
+  margin-inline: auto;
+}
+.mash-stage canvas {
+  width: 100%;
+}
+.paint-stage:has(canvas) {
+  max-width: min(100%, calc(37vh * 900 / 420), 771px);
+}
+.paint-stage canvas {
+  max-height: min(37vh, 360px);
+}
+.paint-invitation {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  color: #b7a4b0;
+  font-size: 21px;
+}
+.paint-invitation span {
+  color: #e9a9bf;
+  font-size: 65px;
+}
+.paint-parade {
+  height: 64px;
+  border-bottom: 2px dashed #eddfd5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b29a9b;
+  font-size: 11px;
+}
+.paint-guest {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+.paint-guest strong {
+  color: #9b7c91;
+  font-size: 12px;
+}
+.guest-body {
+  position: relative;
+  display: block;
+  width: 110px;
+  height: 42px;
+  background-size: cover;
+  border: 3px solid #927c8d;
+  border-radius: 14px 24px 9px 9px;
+}
+.guest-body i {
+  position: absolute;
+  right: 10px;
+  top: 3px;
+  background: #fff8;
+  border-radius: 8px;
+  padding: 0 5px;
+  font-style: normal;
+  color: #604d61;
+}
+.guest-body .wheel {
+  position: absolute;
+  bottom: -8px;
+  width: 17px;
+  height: 17px;
+  border: 4px solid #665b65;
+  background: #fff0d7;
+  border-radius: 50%;
+}
+.guest-body .left {
+  left: 12px;
+}
+.guest-body .right {
+  right: 12px;
+}
+.guest-1 .guest-body {
+  border-radius: 50%;
+  width: 85px;
+  height: 37px;
+}
+.dino-neck {
+  position: absolute;
+  right: -13px;
+  top: -15px;
+  width: 23px;
+  height: 35px;
+  background: #93cbb0;
+  border-radius: 12px;
+}
+.dino-tail {
+  position: absolute;
+  left: -20px;
+  top: 8px;
+  width: 25px;
+  height: 16px;
+  background: #93cbb0;
+  border-radius: 20px 0 0 0;
+}
+.dino-leg {
+  position: absolute;
+  bottom: -10px;
+  width: 15px;
+  height: 18px;
+  background: #93cbb0;
+  border-radius: 8px;
+}
+@media (max-width: 650px) {
+  .mash-game {
+    padding: 8px;
+  }
+  .mash-pads {
+    gap: 5px;
+  }
+  .mash-pads button {
+    font-size: 10px;
+    min-height: 68px;
+  }
+  .mash-small {
+    display: none;
+  }
+  .mash-guide {
+    padding: 10px 3px;
+    gap: 8px;
+  }
+  .mash-guide strong {
+    font-size: 12px;
+  }
+  .mash-guide div > span {
+    font-size: 10px;
+  }
+  .mash-stage-label {
+    left: 12px;
+    top: 8px;
+  }
+  .mash-stage-label strong {
+    font-size: 13px;
+  }
+  .mash-stage-label span {
+    font-size: 8px;
+  }
+  .paint-toolbar > span {
+    display: none;
+  }
+  .paint-toolbar {
+    justify-content: flex-end;
+  }
+  .paint-invitation {
+    font-size: 14px;
+  }
+  .paint-parade {
+    height: 62px;
+  }
+}

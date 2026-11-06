@@ -18,7 +18,13 @@ import { FishingGame } from "./games/Fishing";
 import { ShadowGame } from "./games/Shadow";
 import { FactoryGame } from "./games/Factory";
 
+import { ToyDrumGame } from "./games/ToyDrum";
+import { RainbowPaintGame } from "./games/RainbowPaint";
+import { BlockSmashGame } from "./games/BlockSmash";
 const components: Record<string, () => ReactNode> = {
+  "toy-drum": ToyDrumGame,
+  "rainbow-paint": RainbowPaintGame,
+  "block-smash": BlockSmashGame,
   pancake: PancakeGame,
   "animal-band": BandGame,
   "car-wash": CarWashGame,
@@ -276,7 +282,8 @@ function Home({ navigate }: { navigate: (url: string) => void }) {
           <div>
             <span className="eyebrow">えらんで、あそぼう</span>
             <h2>
-              あそびの たからばこ<span className="count-badge">11</span>
+              あそびの たからばこ
+              <span className="count-badge">{games.length}</span>
             </h2>
           </div>
           <span className="section-note">
@@ -284,18 +291,23 @@ function Home({ navigate }: { navigate: (url: string) => void }) {
           </span>
         </div>
         <div className="filters" role="group" aria-label="ゲームの種類">
-          {["ぜんぶ", "つくる", "おんがく", "たんけん", "かんがえる"].map(
-            (f, i) => (
-              <button
-                key={f}
-                className={filter === f ? "active" : ""}
-                onClick={() => setFilter(f)}
-              >
-                <span className={`filter-dot dot-${i}`} />
-                {f}
-              </button>
-            ),
-          )}
+          {[
+            "ぜんぶ",
+            "ガシャガシャ",
+            "つくる",
+            "おんがく",
+            "たんけん",
+            "かんがえる",
+          ].map((f, i) => (
+            <button
+              key={f}
+              className={filter === f ? "active" : ""}
+              onClick={() => setFilter(f)}
+            >
+              <span className={`filter-dot dot-${i}`} />
+              {f}
+            </button>
+          ))}
         </div>
         <div className="game-grid">
           {games
@@ -435,7 +447,10 @@ function GameShell({
               <Icon name="play" /> あそぶ
             </button>
             <span className="intro-small">
-              <Icon name="key" size={18} /> キーの えが おしえてくれるよ
+              <Icon name="key" size={18} />{" "}
+              {game.category === "ガシャガシャ"
+                ? "すきな キーを おしてみよう"
+                : "キーの えが おしえてくれるよ"}
             </span>
           </section>
         </div>

@@ -90,6 +90,18 @@ globalThis.AudioContext = class {
     this.state = "suspended";
   }
 };
+// Canvas is mocked only for control/lifecycle tests; rendering is checked in a real browser.
+dom.window.HTMLCanvasElement.prototype.getContext = () =>
+  new Proxy(
+    {},
+    {
+      get: (_target, key) =>
+        key === "measureText" ? () => ({ width: 20 }) : () => {},
+      set: () => true,
+    },
+  );
+dom.window.HTMLCanvasElement.prototype.toDataURL = () =>
+  "data:image/png;base64,";
 const React = await import("react");
 const { act } = React;
 const { createRoot } = await import("react-dom/client");
@@ -177,13 +189,13 @@ async function scenario(name, fn) {
   console.log("PASS", name);
 }
 try {
-  await scenario("Home: 11 games and working category filters", async () => {
-    assert.equal(document.querySelectorAll(".game-card").length, 11);
+  await scenario("Home: 14 games and working category filters", async () => {
+    assert.equal(document.querySelectorAll(".game-card").length, 14);
     const filters = [...document.querySelectorAll(".filters button")];
     await click(filters.find((b) => b.textContent === "おんがく"));
     assert.equal(document.querySelectorAll(".game-card").length, 1);
     await click(filters[0]);
-    assert.equal(document.querySelectorAll(".game-card").length, 11);
+    assert.equal(document.querySelectorAll(".game-card").length, 14);
   });
   await scenario(
     "Pancake: pause, both sides, 6 toppings, undo, Enter after clicking, replay",
@@ -230,11 +242,16 @@ try {
         2,
       );
       await tap("Space");
-      const performers = () => [...document.querySelectorAll(".stage-svg > g")]
-        .filter((g) => g.querySelector(".animal"));
+      const performers = () =>
+        [...document.querySelectorAll(".stage-svg > g")].filter((g) =>
+          g.querySelector(".animal"),
+        );
       assert(performers()[0].getAttribute("transform").includes(" 53)"));
       await advance(0.8);
-      assert(performers()[0].getAttribute("transform").includes(" 65)"), "Jump lands without another input");
+      assert(
+        performers()[0].getAttribute("transform").includes(" 65)"),
+        "Jump lands without another input",
+      );
       await tap("Enter");
       await advance(12.3);
       done();
@@ -289,7 +306,11 @@ try {
           ...document.querySelectorAll(".control-deck .control"),
         ];
         const shapes = options.map((b) => b.querySelector("svg").innerHTML);
-        assert.equal(new Set(shapes).size, shapes.length, "Bone choices must be visually distinct");
+        assert.equal(
+          new Set(shapes).size,
+          shapes.length,
+          "Bone choices must be visually distinct",
+        );
         await click(options[attempt % options.length]);
       }
       await advance(4.3);
@@ -504,8 +525,11 @@ try {
       await click("みどり");
       await click("シールを はる");
       assert.equal(
-        document.querySelector('.stage-svg g[transform="translate(66 139) scale(.43)"]').innerHTML,
-        document.querySelector('button[aria-label="シールを かえる"] svg > g').innerHTML,
+        document.querySelector(
+          '.stage-svg g[transform="translate(66 139) scale(.43)"]',
+        ).innerHTML,
+        document.querySelector('button[aria-label="シールを かえる"] svg > g')
+          .innerHTML,
         "Sticker preview must match the applied sticker",
       );
       await click("シールを かえる");
@@ -650,6 +674,67 @@ try {
       await home();
     },
   );
+  for (const id of ["toy-drum", "rainbow-paint", "block-smash"]) {
+    await scenario(
+      `${id}: mash, hold, pause, resume, Enter stays in free play`,
+      async () => {
+        await open(id);
+        const stage = document.querySelector(".mash-stage");
+        assert.equal(document.activeElement, stage);
+        const attr = id === "rainbow-paint" ? "data-marks" : "data-hits";
+        const before = Number(stage.getAttribute(attr));
+        await tap("KeyA");
+        await tap("Enter");
+        await tap("Backspace");
+        assert.equal(Number(stage.getAttribute(attr)), before + 3);
+        await act(async () =>
+          stage.dispatchEvent(
+            new KeyboardEvent("keydown", {
+              code: "KeyB",
+              ctrlKey: true,
+              bubbles: true,
+            }),
+          ),
+        );
+        assert.equal(Number(stage.getAttribute(attr)), before + 3);
+        await key("KeyS");
+        await advance(1);
+        if (id === "rainbow-paint")
+          assert(Number(stage.getAttribute(attr)) > before + 4);
+        await tap("Escape");
+        assert(text().includes("ひとやすみ"));
+        const pausedCount = stage.getAttribute(attr);
+        await advance(2);
+        await tap("KeyA");
+        assert.equal(stage.getAttribute(attr), pausedCount);
+        await click("つづきから あそぶ");
+        await advance(0.3);
+        assert.equal(
+          stage.getAttribute(attr),
+          pausedCount,
+          "Held input must not survive resume",
+        );
+        await tap("Enter");
+        assert(!document.querySelector(".completion-bar"));
+        if (id === "rainbow-paint") {
+          await click("＋ まっさら");
+          await click("▧ まえの かみ");
+          assert.equal(stage.getAttribute("data-paper"), "3");
+        }
+        if (id === "block-smash") {
+          for (let i = 0; i < 12; i++) {
+            await tap("KeyA");
+            await advance(0.8);
+          }
+          assert(
+            Number(stage.getAttribute("data-cycle")) > 0,
+            "Tower must rebuild",
+          );
+        }
+        await home();
+      },
+    );
+  }
 } finally {
   await act(async () => root.unmount());
   await fs.writeFile(
